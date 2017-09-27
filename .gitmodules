@@ -1,0 +1,3 @@
+[submodule "lfmb"]
+	path = lfmb
+	url = https://github.com/peterius/lfmb.git
