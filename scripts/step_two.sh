@@ -5,6 +5,7 @@ if [ $UID == 0 ]; then
 	exit
 fi
 
+mkdir -p system
 SYSROOT=`readlink -f ./system`
 cd tools/ftinstall
 make
@@ -29,6 +30,7 @@ fi
 
 # FIXME what about pgp signatures ?
 
+mkdir -p system/etc
 cp ./etc/passwd $SYSROOT/etc/passwd
 cp ./etc/group $SYSROOT/etc/group
 
@@ -49,7 +51,6 @@ if ! [ -e system/bin/locale ] ; then
 	mkdir -p system/share
 	mkdir -p system/libexec
 	mkdir -p system/var/db
-	mkdir -p system/etc
 	mkdir -p system/local
 	cd glibc-2.26
 	mkdir -p build
