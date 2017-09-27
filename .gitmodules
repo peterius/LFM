@@ -1,3 +1,6 @@
 [submodule "lfmb"]
 	path = lfmb
 	url = https://github.com/peterius/lfmb.git
+[submodule "tools/split-appended-dtb"]
+	path = tools/split-appended-dtb
+	url = https://github.com/dianlujitao/split-appended-dtb
