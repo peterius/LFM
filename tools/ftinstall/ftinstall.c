@@ -30,6 +30,7 @@ int main(int argc, char ** argv)
 	int i, size;
 	int write_redirectlibsize;
 	FILE * lib;
+	int ret;
 
 	if(argc < 3)
 	{
@@ -57,9 +58,14 @@ int main(int argc, char ** argv)
 	for(i = 2; i < argc; i++)
 		sprintf(&(commandline[strlen(commandline)]), "%s ", argv[i]);
 	if(system(commandline) != 0)
+	{
+		ret = -1;
 		printf("Command %s failed\n", commandline);
+	}
+	else
+		ret = 0;
 	sprintf(commandline, "rm /tmp/write_redirect.so");
 	system(commandline);
 	free(commandline);
-	return 0;
+	return ret;
 }

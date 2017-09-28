@@ -31,9 +31,9 @@ struct stat
 	int placeholder;
 };
 
-#define O_WRONLY		01
-#define O_RDWR			02
-#define O_CREAT			0x00000100
+#define O_WRONLY			01
+#define O_RDWR				02
+#define O_CREAT			00000100
 
 //#define RTLD_LAZY		0x00001
 //#define RTLD_NEXT		((void *)-1)
@@ -42,7 +42,6 @@ extern FILE * fopen64(const char * pathname, const char * mode);
 typedef FILE * (* fopenPtr)(const char *, const char *);
 
 extern int open(const char * pathname, int flags, ...);
-//extern int __open_nocancel(const char * pathname, int flags, ...);
 extern int open64(const char * pathname, int flags, ...);
 typedef int (* openPtr)(const char * pathname, int flags, ...);
 
@@ -200,82 +199,15 @@ int open(const char * pathname, int flags, ...)
 			strncmp("/dev/tty", pathname, 8) == 0 || 
 			strncmp("/dev/pts", pathname, 8) == 0 ||
 			strncmp("/tmp", pathname, 4) == 0 ||
-			//strcmp("/bin/egrep", pathname) == 0 ||	//sigh
+			strcmp("/bin/egrep", pathname) == 0 ||	// makefile calls /bin/sh opens this...
 			strcmp("/dev/random", pathname) == 0 ||
 			strcmp("/dev/urandom", pathname) == 0 ||
 			strncmp("/dev/null", pathname, 9) == 0)
 			return realopen(pathname, flags, mode);
-		newpath = malloc(strlen(pathname) + 200); 
-		sprintf(newpath, "%s%s", newroot, pathname);
-#ifdef DEBUG
-		fprintf(stderr, "NEWPATH open: %s\n", newpath);
-#endif //DEBUG
-		fd = realopen(newpath, flags, mode);
-		free(newpath);
-		return fd;
-
-	}
-	return realopen(pathname, flags, mode);
-}
-
-int mkstemp(char * template)
-{
-	mkstempPtr realmkstemp;
-	char * newpath;
-	int fd;
-	char * newroot;
-
-	realmkstemp = dlsym(RTLD_NEXT, "mkstemp");
-#ifdef DEBUG
-	fprintf(stderr, "mkstemp called from %s on %s\n", program_invocation_short_name, template);
-#endif //DEBUG
-	newroot = getenv("FTINSTALL_ROOT");
-	if(template[0] != '/' || strncmp(newroot, template, 15) == 0 ||
-		strncmp("/dev/tty", template, 8) == 0 || 
-		strncmp("/dev/pts", template, 8) == 0 ||
-		strncmp("/tmp", template, 4) == 0 ||
-		strncmp("/dev/null", template, 9) == 0)
-		return realmkstemp(template);
-	newpath = malloc(strlen(template) + 200); 
-	sprintf(newpath, "%s%s", newroot, template);
-#ifdef DEBUG
-	fprintf(stderr, "NEWPATH mkstemp: %s\n", newpath);
-#endif //DEBUG
-	fd = realmkstemp(newpath);
-	free(newpath);
-	return fd;
-}
-
-/*int __open_nocancel(const char * pathname, int flags, ...)
-{
-	openPtr realopen;
-	char * newpath;
-	int fd;
-	char * newroot;
-	mode_t mode;
-	va_list args;
-
-	if(flags & O_CREAT)
-	{
-		va_start(args, flags);
-		mode = va_arg(args, int);
-		va_end(args);
-	}
-
-	realopen = dlsym(RTLD_NEXT, "__open_nocancel");
-	//if((flags & O_WRONLY) || (flags & O_RDWR)) 
-	if(1)
-	{
-#ifdef DEBUG
-		fprintf(stderr, "open called from %s on %s\n", program_invocation_short_name, pathname);
-#endif //DEBUG
-		newroot = getenv("FTINSTALL_ROOT");
-		if(pathname[0] != '/' || strncmp(newroot, pathname, 15) == 0 ||
-			strncmp("/dev/tty", pathname, 8) == 0 || 
-			strncmp("/dev/pts", pathname, 8) == 0 ||
-			strncmp("/tmp", pathname, 4) == 0 ||
-			strcmp("/bin/egrep", pathname) == 0 ||	//sigh
-			strncmp("/dev/null", pathname, 9) == 0)
+		if(strcmp("perl", program_invocation_short_name) == 0 && (
+			strncmp(&(pathname[strlen(pathname) - 3]), ".pm", 3) == 0 ||
+			strncmp(&(pathname[strlen(pathname) - 3]), ".pl", 3) == 0 ||
+			strncmp(&(pathname[strlen(pathname) - 8]), "makeinfo", 8) == 0))
 			return realopen(pathname, flags, mode);
 		newpath = malloc(strlen(pathname) + 200); 
 		sprintf(newpath, "%s%s", newroot, pathname);
@@ -289,7 +221,6 @@ int mkstemp(char * template)
 	}
 	return realopen(pathname, flags, mode);
 }
-*/
 
 int open64(const char * pathname, int flags, ...)
 {
@@ -323,6 +254,11 @@ int open64(const char * pathname, int flags, ...)
 			strcmp("/dev/random", pathname) == 0 ||
 			strcmp("/dev/urandom", pathname) == 0 ||
 			strncmp("/dev/null", pathname, 9) == 0)
+			return realopen(pathname, flags, mode);
+		if(strcmp("perl", program_invocation_short_name) == 0 && (
+			strncmp(&(pathname[strlen(pathname) - 3]), ".pm", 3) == 0 ||
+			strncmp(&(pathname[strlen(pathname) - 3]), ".pl", 3) == 0 ||
+			strncmp(&(pathname[strlen(pathname) - 8]), "makeinfo", 8) == 0))
 			return realopen(pathname, flags, mode);
 		newpath = malloc(strlen(pathname) + 200); 
 		sprintf(newpath, "%s%s", newroot, pathname);
@@ -407,6 +343,33 @@ int _IO_file_open(void * fp, const char * pathname, int posix_mode, int prot, in
 	return realopen(fp, pathname, posix_mode, prot, read_write, is32not64);
 }
 
+int mkstemp(char * template)
+{
+	mkstempPtr realmkstemp;
+	char * newpath;
+	int fd;
+	char * newroot;
+
+	realmkstemp = dlsym(RTLD_NEXT, "mkstemp");
+#ifdef DEBUG
+	fprintf(stderr, "mkstemp called from %s on %s\n", program_invocation_short_name, template);
+#endif //DEBUG
+	newroot = getenv("FTINSTALL_ROOT");
+	if(template[0] != '/' || strncmp(newroot, template, 15) == 0 ||
+		strncmp("/dev/tty", template, 8) == 0 || 
+		strncmp("/dev/pts", template, 8) == 0 ||
+		strncmp("/tmp", template, 4) == 0 ||
+		strncmp("/dev/null", template, 9) == 0)
+		return realmkstemp(template);
+	newpath = malloc(strlen(template) + 200); 
+	sprintf(newpath, "%s%s", newroot, template);
+#ifdef DEBUG
+	fprintf(stderr, "NEWPATH mkstemp: %s\n", newpath);
+#endif //DEBUG
+	fd = realmkstemp(newpath);
+	free(newpath);
+	return fd;
+}
 
 int chmod(const char * pathname, mode_t mode)
 {
