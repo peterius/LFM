@@ -58,34 +58,144 @@ if ! [ -e system/bin/locale ] ; then
 	mkdir -p system/libexec
 	mkdir -p system/var/db
 	mkdir -p system/local
+	# in case of stale
+	rm $SYSROOT/lib/libc.so.bak
 	cd glibc-2.26
 	mkdir -p build
 	cd build
 	# what about a --prefix-local ? FIXME
 	../configure --host=aarch64-linux-gnu --enable-kernel=3.2 \
+			--with-tls --with-__thread \
 			--with-headers=$SYSROOT/usr/include --prefix= || die "Can't configure glibc"
 	make -j4 || die "Can't compile glibc"
 	$FTINSTALL $SYSROOT make install || die "Can't install glibc"
 	cd ../../
+	scripts/unchroot_chroot_ld_scripts.sh
+fi
+export LDFLAGS="-Wl,--sysroot=$SYSROOT -Wl,--hash-style=gnu -Wl,-dynamic-linker=$SYSROOT/lib/ld-linux-aarch64.so.1 -L$SYSROOT/lib -L$SYSROOT/usr/lib"
+export CFLAGS="-Wl,--sysroot=$SYSROOT -Wl,--hash-style=gnu -Wl,-dynamic-linker=$SYSROOT/lib/ld-linux-aarch64.so.1 -L$SYSROOT/lib -L$SYSROOT/usr/lib -I$SYSROOT/include -I$SYSROOT/usr/include "
+# __GNU_LIBRARY_ is for 
+
+export LD_LIBRARY_PATH=$SYSROOT/lib:$SYSROOT/usr/lib
+export LD_INCLUDE_PATH=$SYSROOT/include
+export SYSROOT=$SYSROOT
+export V=1
+
+mkdir -p system/usr/bin
+mkdir -p system/usr/lib
+#gcc is necessary for libstdc++
+if ! [ -e system/usr/lib/libgmp.so ] ; then
+	if ! [ -e gmp-6.1.2 ] ; then
+		if ! [ -e gmp-6.1.2.tar.xz ] ; then
+			`curl -O ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.xz` || \
+				die "Can't get gmp source"
+		fi
+		tar xJvf gmp-6.1.2.tar.xz
+	fi
+	cd gmp-6.1.2 
+	mkdir -p build
+	cd build
+	../configure --host=aarch64-linux-gnu \
+			--with-sysroot=$SYSROOT \
+			--prefix=/usr || die "Can't configure gmp"
+	make -j4 || die "Can't compile gmp"
+	$FTINSTALL $SYSROOT make install || die "Can't install gmp"
+	cd ../../
+fi
+if ! [ -e system/usr/lib/libmpfr.so ] ; then
+	if ! [ -e mpfr-3.1.6 ] ; then
+		if ! [ -e mpfr-3.1.6.tar.xz ] ; then
+			`curl -O ftp.gnu.org/gnu/mpfr/mpfr-3.1.6.tar.xz` || \
+				die "Can't get mpfr source"
+		fi
+		tar xJvf mpfr-3.1.6.tar.xz
+	fi
+	cd mpfr-3.1.6 
+	mkdir -p build
+	cd build
+	../configure --host=aarch64-linux-gnu \
+			--with-sysroot=$SYSROOT \
+			--with-gmp-prefix=/usr \
+			--prefix=/usr || die "Can't configure mpfr"
+	make -j4 || die "Can't compile mpfr"
+	$FTINSTALL $SYSROOT make install || die "Can't install mpfr"
+	cd ../../
+fi
+if ! [ -e system/usr/lib/libmpc.so ] ; then
+	if ! [ -e mpc-1.0.3 ] ; then
+		if ! [ -e mpc-1.0.3.tar.gz ] ; then
+			`curl -O ftp.gnu.org/gnu/mpc/mpc-1.0.3.tar.gz` || \
+				die "Can't get mpc source"
+		fi
+		tar xzvf mpc-1.0.3.tar.gz
+	fi
+	cd mpc-1.0.3 
+	mkdir -p build
+	cd build
+	../configure --host=aarch64-linux-gnu \
+			--with-sysroot=$SYSROOT \
+			--with-gmp-prefix=/usr \
+			--prefix=/usr || die "Can't configure mpc"
+	make -j4 || die "Can't compile mpc"
+	$FTINSTALL $SYSROOT make install || die "Can't install mpc"
+	cd ../../
+fi
+if ! [ -e system/usr/lib/libisl.so ] ; then
+	if ! [ -e isl-0.18 ] ; then
+		if ! [ -e isl-0.18.tar.bz2 ] ; then
+			`curl -O ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2` || \
+				die "Can't get isl source"
+		fi
+		tar xjvf isl-0.18.tar.bz2 
+	fi
+	cd isl-0.18 
+	patch Makefile.in < $PATCHDIR/isl-0.18-defaultincludes.patch
+	mkdir -p build
+	cd build
+	../configure --host=aarch64-linux-gnu \
+			--with-sysroot=$SYSROOT \
+			--with-gmp-prefix=/usr \
+			--prefix=/usr || die "Can't configure isl"
+	make -j || die "Can't compile isl"
+	$FTINSTALL $SYSROOT make install || die "Can't install isl"
+	cd ../../
+fi
+if ! [ -e system/usr/bin/gcc ] ; then
+	if ! [ -e gcc-7.2.0 ] ; then
+		if ! [ -e gcc-7.2.0.tar.xz ] ; then
+			if ! `curl -O ftp.gnu.org/gnu/gcc/gcc-7.2.0/gcc-7.2.0.tar.xz` ; then
+				die "Can't get gcc source"
+			fi
+		fi
+		tar xJvf gcc-7.2.0.tar.xz
+	fi
+	cd gcc-7.2.0 
+	mkdir -p build
+	cd build
+	../configure --host=aarch64-linux-gnu \
+			--enable-languages=c,c++ --enable-__cxa_atexit --enable-c99 --enable-long-long \
+			--enable-threads=posix \
+			--with-sysroot=$SYSROOT \
+			--prefix=/usr || die "Can't configure gcc"
+	make -j4 || die "Can't compile gcc"
+	$FTINSTALL $SYSROOT make install || die "Can't install gcc"
+	cd ../../
 fi
 
 #export LDFLAGS=-L$SYSROOT/lib/
-export LD_LIBRARY_PATH=$SYSROOT/lib
-export LD_INCLUDE_PATH=$SYSROOT/include
 # consider removing... I think this was just for coreutil and it's not always first
 # we could maybe attach it to $(CC), this is kind of ridiculous
 #export INCLUDES="-I$SYSROOT/include $INCLUDES"
 # the corelibs gnulib_tests should figure out there's no O_BINARY or O_TEXT, maybe in
 # the configure?  but it doesn't somehow
-export CFLAGS="-I$SYSROOT/include -DO_BINARY=0 -DO_TEXT=0 $CFLAGS"
-#export LDFLAGS="-L$SYSROOT/lib $LDFLAGS"
-
+export CFLAGS="-Wl,--hash-style=gnu -Wl,--sysroot=$SYSROOT -L$SYSROOT/lib -I$SYSROOT/include -DO_BINARY=0 -DO_TEXT=0"
+#export LDFLAGS="-Wl,--hash-style=gnu -L$SYSROOT/lib"
+#export CC=$(CROSS_COMPILE)gcc
 if ! [ -e system/sbin/init ] ; then
 	if ! [ -e sysvinit-2.88dsf ] ; then
 		if ! [ -e sysvinit-2.88dsf.tar.bz2 ] ; then
-			if [ `curl -L -O http://download.savannah.gnu.org/releases/sysvinit/sysvinit-2.88dsf.tar.bz2` ] ; then
+			`curl -L -O http://download.savannah.gnu.org/releases/sysvinit/sysvinit-2.88dsf.tar.bz2` || \
 				die "Can't get sysvinit source"
-			fi
 		fi
 		tar xjvf sysvinit-2.88dsf.tar.bz2 || `rm sysvinit-2.88dsf.tar.gz2; exit`
 	fi

@@ -19,6 +19,9 @@ cd ../
 
 find $SYSROOT/{,usr/}{bin,lib,sbin} -type f -exec $CROSS_COMPILE'strip' --strip-debug '{}' ';'
 
+#restore libc/libpthread ld scripts
+scripts/unchroot_chroot_ld_scripts.sh
+
 mkdir -p $SYSROOT/etc/init.d
 
 touch $SYSROOT/var/log/{btmp,lastlog,wtmp}

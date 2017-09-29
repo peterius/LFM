@@ -11,6 +11,11 @@ if [ $# == 1 ] && [ $1 == "clean" ]; then
 	cd ..
 	rm -rf system
 	rm -rf glibc-2.26/build
+	rm -rf gmp-6.1.2/build
+	rm -rf mpfr-3.1.6/build
+	rm -rf mpc-1.0.3/build
+	rm -rf isl-0.18/build
+	rm -rf gcc-7.2.0/build
 	rm -rf bash-4.4/build
 	rm -rf coreutils-8.27/build
 	rm -rf util-linux-2.30.2/build
@@ -27,6 +32,11 @@ elif [ $# == 1 ] && [ $1 == "distclean" ]; then
 	cd ..
 	rm -rf system
 	rm -rf glibc-2.26
+	rm -rf gmp-6.1.2
+	rm -rf mpfr-3.1.6
+	rm -rf mpc-1.0.3
+	rm -rf isl-0.18
+	rm -rf gcc-7.2.0
 	rm -rf bash-4.4
 	rm -rf coreutils-8.27
 	rm -rf util-linux-2.30.2

@@ -10,8 +10,8 @@ RAMDISKDIR=$2
 OUTPUT=$3
 OURDIR=`pwd`
 
-PAGESIZE=2048
 #Xiaomi Redmi Note 4 (mido)
+PAGESIZE=2048
 KERNEL_COMMANDLINE="console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci earlycon=msm_hsl_uart,0x78af000 androidboot.selinux=permissive"
 
 cd $RAMDISKDIR
