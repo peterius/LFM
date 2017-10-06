@@ -1,0 +1,4 @@
+1729c1729
+<         fn = basename(p);
+---
+>         fn = basename((char *)p);

@@ -1,0 +1,8 @@
+#42912c42912
+#<          "$CONFIG_SHELL" "$SHELL" /bin/sh /bin/bash /bin/ksh /bin/sh5 no; do
+#---
+#>          "$CONFIG_SHELL" "$SHELL" /bin/bash /bin/ksh /bin/sh5 no; do
+61771c61771
+< cu_have_perl=yes
+---
+> cu_have_perl=no

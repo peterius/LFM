@@ -6,10 +6,11 @@ if [ $UID == 0 ]; then
 fi
 
 SYSROOT=`readlink -f ./system`
+LFMROOT=`readlink -f ./`
 # as long as toolchain is in the path first, --host=aarch64-linux-gnu will find the right binaries
-export PATH=~/projects/LFM/toolchain/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin:$PATH
+export PATH=$LFMROOT/toolchain/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin:$PATH
 export ARCH=arm64
-export CROSS_COMPILE=~/projects/LFM/toolchain/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+export CROSS_COMPILE=$LFMROOT/toolchain/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
 #source ./cross_compile_env.sh
 
 cd lfmb

@@ -1,0 +1,4 @@
+363c363
+< 			errx(EXIT_FAILURE, _("posix_fallocate support is not compiled"))
+---
+> 			errx(EXIT_FAILURE, _("posix_fallocate support is not compiled"));

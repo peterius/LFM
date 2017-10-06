@@ -1,0 +1,8 @@
+548c548
+< 	$(AM_V_CCLD)$(libudev_core_la_LINK)  $(libudev_core_la_OBJECTS) $(libudev_core_la_LIBADD) $(LIBS)
+---
+> 	$(AM_V_CCLD)$(libudev_core_la_LINK)  $(libudev_core_la_OBJECTS) $(libudev_core_la_LIBADD) $(BLKID_LIBS) -lblkid $(LIBS)
+650c650
+< 	$(AM_V_CCLD)$(LINK) $(udevadm_OBJECTS) $(udevadm_LDADD) $(LIBS)
+---
+> 	$(AM_V_CCLD)$(LINK) $(udevadm_OBJECTS) $(udevadm_LDADD) $(BLKID_LIBS) -lblkid $(LIBS)
