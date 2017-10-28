@@ -12,6 +12,8 @@ die()
 }
 
 #git clone https://github.com/MiCode/Xiaomi_Kernel_OpenSource
+#git clone https://github.com/peterius/Xiaomi_Kernel_OpenSource_fbcon
+# ... mido_fbcon branch...
 #ln -sf Xiaomi_Kernel_OpenSource kernel
 echo "Linux kernel..."
 if ! [ -e linux-4.13.2 ]; then

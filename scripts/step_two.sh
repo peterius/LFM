@@ -325,6 +325,8 @@ fi
 # configure script apparently can't figure out that we have these functions?  or do we?
 export CFLAGS="-Wl,--hash-style=gnu -Wl,--sysroot=$SYSROOT -L$SYSROOT/lib -I$SYSROOT/include -DHAVE_PRLIMIT -DHAVE_UNSHARE -DHAVE_SETNS"
 export LDFLAGS="-Wl,-rpath=$SYSROOT/lib"
+export CFLAGS=""
+export LDFLAGS=""
 if ! [ -e system/bin/wall ] ; then
 	if ! [ -e util-linux-2.30.2 ] ; then
 		if ! [ -e util-linux-2.30.2.tar.gz ] ; then
@@ -345,7 +347,7 @@ if ! [ -e system/bin/wall ] ; then
 	cd ../../
 fi
 
-#CFLAGS="-fPIC"
+CFLAGS="-fPIC"
 LDFLAGS="-Wl,-rpath=$SYSROOT/lib -L$SYSROOT/lib -lpthread-2.26"
 if ! [ -e system/lib/liblzma.so ] ; then
 	if ! [ -e xz-5.2.3 ] ; then
