@@ -348,8 +348,9 @@ if ! [ -e system/bin/wall ] ; then
 fi
 
 CFLAGS="-fPIC"
-LDFLAGS="-Wl,-rpath=$SYSROOT/lib -L$SYSROOT/lib -lpthread-2.26"
-if ! [ -e system/lib/liblzma.so ] ; then
+#LDFLAGS="-Wl,-rpath=$SYSROOT/lib -L$SYSROOT/lib -lpthread-2.26"
+LDFLAGS=""
+if ! [ -e system/usr/lib/liblzma.so ] ; then
 	if ! [ -e xz-5.2.3 ] ; then
 		if ! [ -e xz-5.2.3.tar.bz2 ] ; then
 			`curl -L -O https://tukaani.org/xz/xz-5.2.3.tar.bz2` || \
@@ -369,6 +370,13 @@ fi
 
 # just for you zlib:
 export CROSS_PREFIX=~/projects/LFM/toolchain/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+#export CFLAGS="-Wl,--sysroot=$SYSROOT -L$SYSROOT/lib -I$SYSROOT/include"
+#export LDFLAGS="-L$SYSROOT/lib -L$SYSROOT/usr/lib"
+export LDFLAGS="-Wl,--sysroot=$SYSROOT -Wl,--hash-style=gnu -Wl,-dynamic-linker=$SYSROOT/lib/ld-linux-aarch64.so.1 -L$SYSROOT/lib -L$SYSROOT/usr/lib"
+export CFLAGS="-Wl,--sysroot=$SYSROOT -Wl,--hash-style=gnu -Wl,-dynamic-linker=$SYSROOT/lib/ld-linux-aarch64.so.1 -L$SYSROOT/lib -L$SYSROOT/usr/lib -I$SYSROOT/include -I$SYSROOT/usr/include "
+export LD_LIBRARY_PATH=$SYSROOT/lib:$SYSROOT/usr/lib
+export LDFLAGS=""
+export CFLAGS=""
 if ! [ -e system/lib/libz.so ] ; then
 	if ! [ -e zlib-1.2.11 ] ; then
 		if ! [ -e zlib-1.2.11.tar.xz ] ; then
@@ -387,9 +395,12 @@ if ! [ -e system/lib/libz.so ] ; then
 	cd ../../
 fi
 
-export LDFLAGS="-L$SYSROOT/lib -L$SYSROOT/usr/lib"
+#export LDFLAGS="-L$SYSROOT/lib -L$SYSROOT/usr/lib"
+export CFLAGS="-I$SYSROOT/include -I$sysroot/usr/include"
+#export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SYSROOT/lib:$SYSROOT/usr/lib"
 
-if ! [ -e system/lib/libkmod.so ] ; then
+if [ -e finekmodjustforgetityouworkedbefore ] ; then
+#if ! [ -e system/lib/libkmod.so ] ; then
 	if ! [ -e kmod-24 ] ; then
 		if ! [ -e kmod-24.tar.xz ] ; then
 			`curl -O https://www.kernel.org/pub/linux/utils/kernel/kmod/kmod-24.tar.xz` || \
@@ -402,8 +413,10 @@ if ! [ -e system/lib/libkmod.so ] ; then
 	cd build
 	export V=1
 	../configure --prefix= --host=aarch64-linux-gnu \
-			--with-xz --with-zlib  || die "Can't configure kmod"
-	make -j4 || die "Can't compile kmod"
+			--with-sysroot=$SYSROOT \
+			--with-xz --with-zlib || die "Can't configure kmod"
+#export LDFLAGS="-L$SYSROOT/lib -L$SYSROOT/usr/lib"
+	make -j1 || die "Can't compile kmod"
 	$FTINSTALL $SYSROOT make install || die "Can't install kmod"
 	cd ../../
 fi
@@ -418,7 +431,7 @@ rm $SYSROOT/lib/libuuid.la
 rm $SYSROOT/lib/libblkid.la
 
 #export LD_LIBRARY_PATH="$SYSROOT/lib $SYSROOT/usr/lib"
-export LDFLAGS="-Wl,-rpath=$SYSROOT/lib -Wl,-rpath-link=$SYSROOT/lib -L$SYSROOT/lib"
+#export LDFLAGS="-Wl,-rpath=$SYSROOT/lib -Wl,-rpath-link=$SYSROOT/lib -L$SYSROOT/lib"
 #export LT_SYS_LIBRARY_PATH="$SYSROOT/lib $SYSROOT/usr/lib"
 export PKG_CONFIG_LIBDIR="$SYSROOT/lib $SYSROOT/usr/lib"
 export BLKID_CFLAGS="-I$SYSROOT/include -I$SYSROOT/usr/include"
@@ -439,10 +452,31 @@ if ! [ -e system/sbin/udevd ] ; then
 	mkdir -p build
 	cd build
 	export V=1
-	../configure --prefix= --host=aarch64-linux-gnu || die "Can't configure eudev"
+	../configure --prefix= --host=aarch64-linux-gnu \
+			--with-sysroot=$SYSROOT \
+			|| die "Can't configure eudev"
 	make -j4 || die "Can't compile eudev"
 	$FTINSTALL $SYSROOT make install || die "Can't install eudev"
 	cd ../../
 fi
 
+if ! [ -e system/bin/blas2 ] ; then
+	if ! [ -e wireless_tools.28 ] ; then
+		if ! [ -e wireless_tools.28.tar.gz ] ; then
+			`curl -O http://www.hpl.hp.com/personal/Jean_Tourrilhes/Linux/wireless_tools.28.tar.gz` || \
+				die "Can't get wireless_tools.28 source"
+		fi
+		tar xzvf wireless_tools.28.tar.gz 
+	fi
+	cd wireless_tools.28 
+	mkdir -p build
+	cd build
+	../configure --prefix= --host=aarch64-linux-gnu \
+		--enable-install-program=hostname \
+		--cache-file=config.cache || die "Can't configure coreutils"
+	make -j4 || die "Can't compile coreutils"
+	$FTINSTALL $SYSROOT make install || die "Can't install coreutils"
+	cd ../../
+fi
 exit
+
