@@ -1,3 +1,7 @@
 Linux for mobile
 
 	- currently working on for Xiaomi Redmi Note 4 (mido)
+
+Apparently this was all as obvious a thing to do as I thought it was.  All these configure scripts and make files and environmental variables that all don't quite work with cross compiling.  But it looks like buildroot (https://buildroot.org) is working and easy to use.  I couldn't have hoped for more, I wish I'd found it earlier.
+
+So I'm going put a defconfig for buildroot up, and put together some package files for what I'm adding as well as scripts so setup the images if I can't the buildroot files to do it.
